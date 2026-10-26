@@ -1,1 +1,42 @@
+name: Build MIKA ZS LAUCHER APK
 
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "*.zip"
+      - ".github/workflows/build-apk.yml"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Extract launcher
+        run: |
+          mkdir source
+          unzip -q MIKA_ZS_LAUCHER_v0.2.zip -d source
+
+      - name: Build APK
+        working-directory: source/MIKA_ZS_LAUCHER
+        run: gradle assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: MIKA-ZS-LAUCHER-APK
+          path: source/MIKA_ZS_LAUCHER/app/build/outputs/apk/debug/*.apk
